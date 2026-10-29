@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f4f6f3" />
+  <title>Computer Shop | Панель магазина</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: #202923;
+      background: #f4f6f3;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --ink: #202923;
+      --muted: #748078;
+      --line: #e3e8e2;
+      --paper: #fff;
+      --green: #197451;
+      --green-dark: #115a3e;
+      --green-soft: #e7f3ed;
+      --amber: #a75a18;
+      --amber-soft: #fbefe1;
+      --red: #b43a35;
+      --shadow: 0 8px 28px rgba(32, 41, 35, .045);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: #f4f6f3; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .topbar { height: 66px; display: flex; align-items: center; justify-content: space-between; padding: 0 max(24px, calc((100% - 1320px) / 2)); background: #fff; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 11px; color: var(--ink); text-decoration: none; font-size: 15px; font-weight: 750; }
+    .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; color: white; background: var(--green); }
+    .brand-mark svg { width: 19px; height: 19px; }
+    .topbar-right { display: flex; align-items: center; gap: 20px; color: var(--muted); font-size: 13px; }
+    .connection { display: inline-flex; align-items: center; gap: 7px; }
+    .connection::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #2a9b65; box-shadow: 0 0 0 3px #e4f4eb; }
+    main { max-width: 1320px; margin: 0 auto; padding: 35px 24px 56px; }
+    .page-heading { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 25px; }
+    .eyebrow { margin: 0 0 8px; color: var(--green); font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    h1 { margin: 0; font-size: 28px; line-height: 1.2; font-weight: 720; }
+    .page-heading p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+    .date-label { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .metric { display: flex; align-items: center; gap: 14px; min-height: 92px; padding: 18px 20px; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .metric-icon { display: grid; place-items: center; flex: 0 0 42px; height: 42px; border-radius: 8px; color: var(--green); background: var(--green-soft); }
+    .metric:nth-child(2) .metric-icon { color: #315a84; background: #eaf0f7; }
+    .metric:nth-child(3) .metric-icon { color: var(--amber); background: var(--amber-soft); }
+    .metric:nth-child(4) .metric-icon { color: #745d92; background: #f0ebf5; }
+    .metric-icon svg { width: 20px; height: 20px; }
+    .metric-label { display: block; margin-bottom: 5px; color: var(--muted); font-size: 12px; }
+    .metric-value { display: block; font-size: 21px; line-height: 1.1; font-weight: 720; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(310px, .85fr); gap: 20px; align-items: start; }
+    .column { display: grid; gap: 20px; min-width: 0; }
+    .section { min-width: 0; padding: 21px 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 17px; }
+    .section-title { margin: 0; font-size: 16px; line-height: 1.3; font-weight: 720; }
+    .section-caption { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .button { display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 38px; padding: 0 13px; border: 1px solid transparent; border-radius: 6px; font-size: 12px; font-weight: 700; transition: background .15s ease, border-color .15s ease; }
+    .button svg { width: 15px; height: 15px; }
+    .button-primary { color: white; background: var(--green); }
+    .button-primary:hover { background: var(--green-dark); }
+    .button-secondary { color: #38433c; background: #fff; border-color: var(--line); }
+    .button-secondary:hover { background: #f7f9f6; border-color: #cbd5ce; }
+    .button-buy { min-height: 42px; padding: 0 18px; color: #fff; background: var(--green); }
+    .button-buy:hover { background: var(--green-dark); }
+    .purchase-box { margin: 0 0 18px; padding: 15px; background: #f7faf7; border: 1px solid #e6eee8; border-radius: 7px; }
+    .purchase-title { margin: 0 0 12px; font-size: 12px; font-weight: 750; }
+    .purchase-form { display: grid; grid-template-columns: minmax(150px, 1.4fr) minmax(130px, 1fr) minmax(130px, 1fr) 86px auto; gap: 10px; align-items: end; }
+    .field label { display: block; margin: 0 0 6px; color: #657168; font-size: 11px; font-weight: 700; }
+    input, select, textarea { width: 100%; min-width: 0; min-height: 39px; padding: 9px 10px; color: var(--ink); background: white; border: 1px solid #d7dfd8; border-radius: 5px; outline: none; font-size: 12px; }
+    input:focus, select:focus, textarea:focus { border-color: #65a485; box-shadow: 0 0 0 3px rgba(25, 116, 81, .1); }
+    textarea { min-height: 76px; resize: vertical; }
+    .table-wrap { overflow-x: auto; }
+    .catalog-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 10px; }
+    .search-box { position: relative; flex: 1; max-width: 360px; }
+    .search-box svg { position: absolute; top: 11px; left: 11px; width: 16px; height: 16px; color: #829087; pointer-events: none; }
+    .search-box input { min-height: 38px; padding-left: 34px; background: #fff; }
+    .result-count { color: var(--muted); font-size: 11px; white-space: nowrap; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+    th { padding: 10px 11px; color: #7a857d; background: #f8faf8; border-bottom: 1px solid var(--line); font-size: 10px; font-weight: 750; text-transform: uppercase; white-space: nowrap; }
+    td { padding: 12px 11px; border-bottom: 1px solid #edf0ed; white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fafcf9; }
+    .product-name { font-weight: 700; }
+    .product-sub { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .stock { display: inline-block; min-width: 30px; padding: 4px 7px; color: #385b46; background: #eaf4ed; border-radius: 4px; text-align: center; font-size: 11px; font-weight: 700; }
+    .stock-low { color: #9a551e; background: #fbefdf; }
+    .empty { padding: 28px 12px; color: #87928a; text-align: center; }
+    .status { min-height: 18px; margin: 9px 0 0; color: var(--muted); font-size: 12px; }
+    .status:empty { display: none; }
+    .status.ok { color: var(--green); }
+    .status.error { color: var(--red); }
+    .customer-form { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+    .customer-form .wide { grid-column: 1 / -1; }
+    .customer-form .button { width: 100%; }
+    .create-product { display: grid; gap: 11px; }
+    .form-two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .history-table td { padding-top: 11px; padding-bottom: 11px; }
+    .role { display: inline-flex; align-items: center; padding: 4px 7px; border-radius: 4px; color: #315a84; background: #eaf0f7; font-size: 10px; font-weight: 700; }
+    .role-seller { color: #8a5619; background: #fbefdf; }
+    .section-foot { margin-top: 13px; color: var(--muted); font-size: 11px; }
+    @media (max-width: 1050px) {
+      .purchase-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .purchase-form .button-buy { grid-column: 1 / -1; }
+    }
+    @media (max-width: 850px) {
+      main { padding: 27px 18px 40px; }
+      .workspace { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 560px) {
+      .topbar { height: 58px; padding: 0 16px; }
+      .topbar-right { gap: 8px; }
+      .topbar-right .connection { font-size: 0; }
+      .topbar-right .connection::before { width: 9px; height: 9px; }
+      main { padding: 23px 13px 32px; }
+      .page-heading { align-items: start; margin-bottom: 19px; }
+      .date-label { display: none; }
+      h1 { font-size: 24px; }
+      .metrics { gap: 9px; margin-bottom: 14px; }
+      .metric { min-height: 78px; gap: 9px; padding: 12px 10px; }
+      .metric-icon { flex-basis: 34px; height: 34px; }
+      .metric-icon svg { width: 17px; height: 17px; }
+      .metric-value { font-size: 18px; }
+      .metric-label { font-size: 10px; }
+      .section { padding: 16px 14px; }
+      .catalog-tools { align-items: stretch; flex-direction: column; gap: 7px; }
+      .search-box { max-width: none; }
+      .result-count { text-align: right; }
+      .purchase-form { grid-template-columns: 1fr 1fr; }
+      .purchase-form .field:first-child { grid-column: 1 / -1; }
+      .purchase-form .button-buy { grid-column: 1 / -1; }
+      .customer-form { grid-template-columns: 1fr; }
+      .customer-form .wide { grid-column: auto; }
+      .form-two, .form-three { grid-template-columns: 1fr 1fr; }
+      th, td { padding-left: 8px; padding-right: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8.5 12 4l9 4.5v10L12 23l-9-4.5v-10Z"/><path d="m3.5 8.8 8.5 4.4 8.5-4.4M12 13.2V23"/></svg></span>
+      <span>Computer Shop</span>
+    </a>
+    <div class="topbar-right"><span class="connection">Сервис активен</span><span>Панель магазина</span></div>
+  </header>
+  <main>
+    <section class="page-heading">
+      <div><p class="eyebrow">Управление магазином</p><h1>Обзор магазина</h1><p>Каталог, счета участников и покупки в одном месте.</p></div>
+      <span class="date-label" id="today"></span>
+    </section>
+
+    <section class="metrics" aria-label="Сводка магазина">
+      <div class="metric"><span class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4.4 7.7 7.6 4.2 7.6-4.2M12 12v9"/></svg></span><span><span class="metric-label">Товаров в каталоге</span><strong class="metric-value" id="metric-products">—</strong></span></div>
+      <div class="metric"><span class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.4-3.2 2.7-5 6.5-5s6.1 1.8 6.5 5M16 5.2a3.5 3.5 0 0 1 0 6.6M17 15c2.7.4 4.2 2 4.5 5"/></svg></span><span><span class="metric-label">Участников</span><strong class="metric-value" id="metric-customers">—</strong></span></div>
+      <div class="metric"><span class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14l1 14H4L5 7Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3M8 13h8"/></svg></span><span><span class="metric-label">Оформлено покупок</span><strong class="metric-value" id="metric-purchases">—</strong></span></div>
+      <div class="metric"><span class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18V6m0 12h16M7 15l4-4 3 2 5-6"/><path d="M16 7h3v3"/></svg></span><span><span class="metric-label">Сумма продаж</span><strong class="metric-value" id="metric-sales">—</strong></span></div>
+    </section>
+
+    <div class="workspace">
+      <div class="column">
+        <section class="section">
+          <div class="section-head">
+            <div><h2 class="section-title">Каталог товаров</h2><p class="section-caption">Остатки и цены в магазине</p></div>
+            <button class="button button-secondary" id="refresh" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9a7 7 0 0 1 12-2L20 12M4 12l2.5 5a7 7 0 0 0 12-2"/></svg>Обновить</button>
+          </div>
+          <div class="purchase-box">
+            <h3 class="purchase-title">Оформить покупку</h3>
+            <form id="purchase-form" class="purchase-form">
+              <div class="field"><label for="purchase-product">Товар</label><select id="purchase-product" required></select></div>
+              <div class="field"><label for="purchase-buyer">Покупатель</label><select id="purchase-buyer" required></select></div>
+              <div class="field"><label for="purchase-seller">Продавец</label><select id="purchase-seller" required></select></div>
+              <div class="field"><label for="purchase-quantity">Штук</label><input id="purchase-quantity" name="quantity" type="number" min="1" value="1" required /></div>
+              <button class="button button-buy" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.4L21 9H7"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>Купить</button>
+            </form>
+            <div id="purchase-status" class="status" role="status" aria-live="polite"></div>
+          </div>
+          <div class="catalog-tools">
+            <label class="search-box" for="product-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
+              <input id="product-search" type="search" placeholder="Найти по названию, бренду или модели" autocomplete="off" />
+            </label>
+            <span id="product-result-count" class="result-count"></span>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>ID</th><th>Товар</th><th>Категория</th><th>Цена</th><th>Остаток</th></tr></thead><tbody id="products"><tr><td colspan="5" class="empty">Загрузка каталога...</td></tr></tbody></table></div>
+        </section>
+        <section class="section">
+          <div class="section-head"><div><h2 class="section-title">История покупок</h2><p class="section-caption">Последние операции перевода средств</p></div><button class="button button-secondary" id="refresh-purchases" type="button">Обновить</button></div>
+          <div class="table-wrap"><table class="history-table"><thead><tr><th>№</th><th>Товар</th><th>Покупатель</th><th>Продавец</th><th>Сумма</th></tr></thead><tbody id="purchases"><tr><td colspan="5" class="empty">Покупок пока нет</td></tr></tbody></table></div>
+        </section>
+      </div>
+
+      <aside class="column">
+        <section class="section">
+          <div class="section-head"><div><h2 class="section-title">Участники</h2><p class="section-caption">Покупатели и продавцы, баланс счетов</p></div></div>
+          <form id="customer-form" class="customer-form">
+            <div class="field wide"><label for="customer-name">Имя и фамилия</label><input id="customer-name" name="name" required placeholder="Например, Иван Петров" /></div>
+            <div class="field"><label for="customer-role">Роль</label><select id="customer-role" name="role" required><option value="buyer">Покупатель</option><option value="seller">Продавец</option></select></div>
+            <div class="field"><label for="customer-balance">Начальный баланс, ₽</label><input id="customer-balance" name="balance" type="number" min="0" step="0.01" value="0" required /></div>
+            <div class="wide"><button class="button button-primary" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>Добавить участника</button></div>
+          </form>
+          <div id="customer-status" class="status" role="status" aria-live="polite"></div>
+          <div class="table-wrap" style="margin-top: 14px"><table><thead><tr><th>Имя</th><th>Роль</th><th>Баланс</th></tr></thead><tbody id="customers"><tr><td colspan="3" class="empty">Загрузка счетов...</td></tr></tbody></table></div>
+          <div class="section-foot">При покупке сумма списывается у покупателя и поступает продавцу.</div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><div><h2 class="section-title">Добавить товар</h2><p class="section-caption">Новая позиция каталога</p></div></div>
+          <form id="product-form" class="create-product">
+            <div class="field"><label for="product-name">Название</label><input id="product-name" name="name" required placeholder="Например, Видеокарта" /></div>
+            <div class="form-two">
+              <div class="field"><label for="product-brand">Бренд</label><input id="product-brand" name="brand" placeholder="MSI" /></div>
+              <div class="field"><label for="product-model">Модель</label><input id="product-model" name="model" placeholder="RTX 4060" /></div>
+            </div>
+            <div class="field"><label for="product-description">Описание</label><textarea id="product-description" name="description" placeholder="Краткое описание товара"></textarea></div>
+            <div class="form-two">
+              <div class="field"><label for="product-price">Цена, ₽</label><input id="product-price" name="price" type="number" min="0.01" step="0.01" required /></div>
+              <div class="field"><label for="product-stock">Количество</label><input id="product-stock" name="stock_quantity" type="number" min="0" value="0" /></div>
+            </div>
+            <div class="form-two">
+              <div class="field"><label for="category-select">Категория</label><select name="category_id" id="category-select" required></select></div>
+              <div class="field"><label for="product-supplier">ID поставщика</label><input id="product-supplier" name="supplier_id" type="number" min="1" placeholder="Необязательно" /></div>
+            </div>
+            <div class="field"><label for="product-warranty">Гарантия, месяцев</label><input id="product-warranty" name="warranty_months" type="number" min="0" value="12" /></div>
+            <button class="button button-primary" type="submit">Сохранить товар</button>
+            <div id="form-status" class="status" role="status" aria-live="polite"></div>
+          </form>
+        </section>
+      </aside>
+    </div>
+  </main>
+</body>
+<script>
+    const $ = (selector) => document.querySelector(selector);
+    const money = (value) => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 2 }).format(value);
+    let categories = [];
+    let products = [];
+    let customers = [];
+    let purchases = [];
+
+    $('#today').textContent = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+
+    async function getJson(url) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Ошибка загрузки (${response.status})`);
+        return response.json();
+    }
+
+
+    async function loadCategories() {
+        categories = await getJson('/categories');
+        $('#category-select').innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+
+    function renderProducts() {
+        const query = $('#product-search').value.trim().toLocaleLowerCase('ru-RU');
+        const filtered = products.filter(p => {
+            const category = categories.find(c => c.id === p.category_id)?.name || '';
+            return [p.name, p.brand, p.model, category].some(value => String(value || '').toLocaleLowerCase('ru-RU').includes(query));
+        });
+        $('#products').innerHTML = filtered.length ? filtered.map(p => `<tr><td>${p.id}</td><td><span class="product-name">${p.name}</span><span class="product-sub">${[p.brand, p.model].filter(Boolean).join(' ') || 'Без описания модели'}</span></td><td>${categories.find(c => c.id === p.category_id)?.name || p.category_id}</td><td><strong>${money(p.price)}</strong></td><td><span class="stock ${p.stock_quantity < 4 ? 'stock-low' : ''}">${p.stock_quantity}</span></td></tr>`).join('') : `<tr><td colspan="5" class="empty">${query ? 'По вашему запросу ничего не найдено' : 'Товаров пока нет'}</td></tr>`;
+        $('#product-result-count').textContent = query ? `${filtered.length} из ${products.length}` : `${products.length} товаров`;
+    }
+
+    async function loadProducts() {
+        products = await getJson('/products');
+        renderProducts();
+        $('#purchase-product').innerHTML = products.filter(p => p.is_active && p.stock_quantity > 0).map(p => `<option value="${p.id}">${p.name} · ${money(p.price)} · остаток ${p.stock_quantity}</option>`).join('');
+        $('#metric-products').textContent = products.length;
+    }
+
+    async function loadCustomers() {
+        customers = await getJson('/customers');
+        $('#customers').innerHTML = customers.length ? customers.map(c => `<tr><td><span class="product-name">${c.name}</span></td><td><span class="role ${c.role === 'seller' ? 'role-seller' : ''}">${c.role === 'seller' ? 'Продавец' : 'Покупатель'}</span></td><td>${money(c.balance)}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Пока нет участников</td></tr>';
+        $('#purchase-buyer').innerHTML = customers.filter(c => c.role === 'buyer').map(c => `<option value="${c.id}">${c.name} · ${money(c.balance)}</option>`).join('');
+        $('#purchase-seller').innerHTML = customers.filter(c => c.role === 'seller').map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        $('#metric-customers').textContent = customers.length;
+    }
+
+    async function loadPurchases() {
+        purchases = await getJson('/purchases');
+        $('#purchases').innerHTML = purchases.length ? purchases.map(p => `<tr><td>#${p.id}</td><td>${products.find(x => x.id === p.product_id)?.name || p.product_id}</td><td>${customers.find(x => x.id === p.buyer_id)?.name || p.buyer_id}</td><td>${customers.find(x => x.id === p.seller_id)?.name || p.seller_id}</td><td><strong>${money(p.amount)}</strong></td></tr>`).join('') : '<tr><td colspan="5" class="empty">Покупок пока нет</td></tr>';
+        $('#metric-purchases').textContent = purchases.length;
+        $('#metric-sales').textContent = money(purchases.reduce((sum, p) => sum + Number(p.amount), 0));
+    }
+
+    $('#customer-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const data = Object.fromEntries(new FormData(form));
+        data.balance = Number(data.balance);
+        const status = $('#customer-status');
+        try {
+            const response = await fetch('/customers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.detail || 'Не удалось создать участника');
+            form.reset();
+            status.textContent = `${data.role === 'seller' ? 'Продавец' : 'Покупатель'} добавлен`;
+            status.className = 'status ok';
+            await loadCustomers();
+        } catch (error) { status.textContent = error.message; status.className = 'status error'; }
+    });
+
+    $('#purchase-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const data = Object.fromEntries(new FormData(form));
+        data.buyer_id = Number($('#purchase-buyer').value);
+        data.seller_id = Number($('#purchase-seller').value);
+        data.quantity = Number(data.quantity);
+        const productId = $('#purchase-product').value;
+        const status = $('#purchase-status');
+        try {
+            const response = await fetch(`/products/${productId}/purchase`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.detail || 'Не удалось оформить покупку');
+            status.textContent = `Покупка оформлена на ${money(result.amount)}. Деньги переведены продавцу.`;
+            status.className = 'status ok';
+            await Promise.all([loadProducts(), loadCustomers()]);
+            await loadPurchases();
+        } catch (error) { status.textContent = error.message; status.className = 'status error'; }
+    });
+
+    $('#product-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const data = Object.fromEntries(new FormData(form));
+        ['price', 'stock_quantity', 'category_id', 'warranty_months'].forEach(key => data[key] = Number(data[key]));
+        data.supplier_id = data.supplier_id ? Number(data.supplier_id) : null;
+        data.is_active = true;
+        const status = $('#form-status');
+        try {
+            const response = await fetch('/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.detail || 'Не удалось сохранить товар');
+            form.reset();
+            status.textContent = 'Товар добавлен в каталог';
+            status.className = 'status ok';
+            await loadCategories();
+            await loadProducts();
+        } catch (error) { status.textContent = error.message; status.className = 'status error'; }
+    });
+
+    async function refreshAll() {
+        try {
+            await Promise.all([loadCategories(), loadProducts(), loadCustomers()]);
+            await loadPurchases();
+        } catch (error) {
+            $('#products').innerHTML = `<tr><td colspan="5" class="empty">${error.message}. Проверьте подключение к базе.</td></tr>`;
+        }
+    }
+
+    $('#refresh').addEventListener('click', refreshAll);
+    $('#refresh-purchases').addEventListener('click', loadPurchases);
+    $('#product-search').addEventListener('input', renderProducts);
+    refreshAll();
+</script>
+</html>

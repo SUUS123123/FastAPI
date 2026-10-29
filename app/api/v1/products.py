@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -46,3 +47,25 @@ def get_product(product_id: int, db: Session = Depends(get_db)) -> Product:
     if product is None:
         raise HTTPException(status_code=404, detail="Товар не найден")
     return product
+
+
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_product(product_id: int, db: Session = Depends(get_db)) -> Response:
+    product = product_repo.get_by_id(db, product_id)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Товар не найден")
+    if product_repo.has_purchases(db, product_id):
+        raise HTTPException(
+            status_code=409,
+            detail="Нельзя удалить товар: он есть в истории покупок",
+        )
+
+    try:
+        product_repo.delete(db, product)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Нельзя удалить товар: он есть в истории покупок",
+        )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

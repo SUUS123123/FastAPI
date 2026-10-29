@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.models.category import Category
 from app.models.product import Product
+from app.models.purchase import Purchase
 
 
 def create(db: Session, **values: object) -> Product:
@@ -45,3 +46,15 @@ def search(
 
 def get_by_id(db: Session, product_id: int) -> Product | None:
     return db.get(Product, product_id)
+
+
+def has_purchases(db: Session, product_id: int) -> bool:
+    purchase_id = db.scalar(
+        select(Purchase.id).where(Purchase.product_id == product_id).limit(1)
+    )
+    return purchase_id is not None
+
+
+def delete(db: Session, product: Product) -> None:
+    db.delete(product)
+    db.commit()

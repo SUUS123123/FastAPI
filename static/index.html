@@ -250,6 +250,16 @@
             <div id="form-status" class="status" role="status" aria-live="polite"></div>
           </form>
         </section>
+
+        <section class="section">
+          <div class="section-head"><div><h2 class="section-title">Удалить товар</h2><p class="section-caption">Удаление позиции из каталога</p></div></div>
+          <form id="delete-product-form" class="create-product">
+            <div class="field"><label for="delete-product-select">Товар</label><select id="delete-product-select" required></select></div>
+            <button class="button button-secondary" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M10 11v6M14 11v6M5.5 7l1 14h11l1-14M9 7V4h6v3"/></svg>Удалить выбранный товар</button>
+          </form>
+          <div id="delete-product-status" class="status" role="status" aria-live="polite"></div>
+          <div class="section-foot">Товары с оформленными покупками удалить нельзя, чтобы сохранить историю.</div>
+        </section>
       </aside>
     </div>
   </main>
@@ -304,7 +314,31 @@
     async function loadProducts() {
         products = await getJson('/products');
         $('#purchase-product').innerHTML = products.filter(p => p.is_active && p.stock_quantity > 0).map(p => `<option value="${p.id}">${p.name} · ${money(p.price)} · остаток ${p.stock_quantity}</option>`).join('');
+        $('#delete-product-select').innerHTML = products.length ? products.map(p => `<option value="${p.id}">${p.name} · #${p.id}</option>`).join('') : '<option value="">Нет товаров</option>';
+        $('#delete-product-select').disabled = products.length === 0;
         $('#metric-products').textContent = products.length;
+    }
+
+    async function deleteProduct(productId, status, button) {
+        const product = products.find(item => item.id === Number(productId));
+        if (!window.confirm(`Удалить товар «${product?.name || productId}»?`)) return;
+
+        if (button) button.disabled = true;
+        try {
+            const response = await fetch(`/products/${productId}`, { method: 'DELETE' });
+            if (!response.ok) {
+                const result = await response.json();
+                throw new Error(result.detail || 'Не удалось удалить товар');
+            }
+            status.textContent = 'Товар удален';
+            status.className = 'status ok';
+            await loadProducts();
+            await searchProducts();
+        } catch (error) {
+            status.textContent = error.message;
+            status.className = 'status error';
+            if (button) button.disabled = false;
+        }
     }
 
     async function loadCustomers() {
@@ -381,6 +415,12 @@
         } catch (error) { status.textContent = error.message; status.className = 'status error'; }
     });
 
+    $('#delete-product-form').addEventListener('submit', event => {
+        event.preventDefault();
+        const productId = $('#delete-product-select').value;
+        if (productId) deleteProduct(productId, $('#delete-product-status'));
+    });
+
     async function refreshAll() {
         try {
             await loadCategories();
@@ -399,27 +439,7 @@
     $('#products').addEventListener('click', async event => {
         const button = event.target.closest('[data-delete-product]');
         if (!button) return;
-
-        const productId = button.dataset.deleteProduct;
-        if (!window.confirm(`Удалить товар #${productId}?`)) return;
-
-        const status = $('#product-status');
-        button.disabled = true;
-        try {
-            const response = await fetch(`/products/${productId}`, { method: 'DELETE' });
-            if (!response.ok) {
-                const result = await response.json();
-                throw new Error(result.detail || 'Не удалось удалить товар');
-            }
-            status.textContent = 'Товар удален';
-            status.className = 'status ok';
-            await loadProducts();
-            await searchProducts();
-        } catch (error) {
-            status.textContent = error.message;
-            status.className = 'status error';
-            button.disabled = false;
-        }
+        deleteProduct(button.dataset.deleteProduct, $('#product-status'), button);
     });
     refreshAll();
 </script>

@@ -35,4 +35,22 @@ app.include_router(api_v1_router)
 
 @app.get("/", include_in_schema=False)
 def root() -> FileResponse:
-    return FileResponse(PROJECT_ROOT / "static" / "index.html")
+    return FileResponse(
+        PROJECT_ROOT / "static" / "index.html",
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate"},
+    )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -229,6 +229,16 @@
         </section>
 
         <section class="section">
+          <div class="section-head"><div><h2 class="section-title">Удалить товар</h2><p class="section-caption">Удаление позиции из каталога</p></div></div>
+          <form id="delete-product-form" class="create-product">
+            <div class="field"><label for="delete-product-select">Товар</label><select id="delete-product-select" required></select></div>
+            <button class="button button-secondary" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M10 11v6M14 11v6M5.5 7l1 14h11l1-14M9 7V4h6v3"/></svg>Удалить выбранный товар</button>
+          </form>
+          <div id="delete-product-status" class="status" role="status" aria-live="polite"></div>
+          <div class="section-foot">Товары с оформленными покупками удалить нельзя, чтобы сохранить историю.</div>
+        </section>
+
+        <section class="section">
           <div class="section-head"><div><h2 class="section-title">Добавить товар</h2><p class="section-caption">Новая позиция каталога</p></div></div>
           <form id="product-form" class="create-product">
             <div class="field"><label for="product-name">Название</label><input id="product-name" name="name" required placeholder="Например, Видеокарта" /></div>
@@ -251,15 +261,6 @@
           </form>
         </section>
 
-        <section class="section">
-          <div class="section-head"><div><h2 class="section-title">Удалить товар</h2><p class="section-caption">Удаление позиции из каталога</p></div></div>
-          <form id="delete-product-form" class="create-product">
-            <div class="field"><label for="delete-product-select">Товар</label><select id="delete-product-select" required></select></div>
-            <button class="button button-secondary" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M10 11v6M14 11v6M5.5 7l1 14h11l1-14M9 7V4h6v3"/></svg>Удалить выбранный товар</button>
-          </form>
-          <div id="delete-product-status" class="status" role="status" aria-live="polite"></div>
-          <div class="section-foot">Товары с оформленными покупками удалить нельзя, чтобы сохранить историю.</div>
-        </section>
       </aside>
     </div>
   </main>

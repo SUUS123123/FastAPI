@@ -74,6 +74,9 @@
     textarea { min-height: 76px; resize: vertical; }
     .table-wrap { overflow-x: auto; }
     .catalog-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 10px; }
+    .catalog-filters { display: grid; grid-template-columns: minmax(170px, 2fr) minmax(130px, 1.3fr) repeat(2, minmax(90px, .8fr)) auto auto; gap: 8px; align-items: end; margin-bottom: 10px; }
+    .catalog-filters .search-box { max-width: none; }
+    .catalog-filters .button { white-space: nowrap; }
     .search-box { position: relative; flex: 1; max-width: 360px; }
     .search-box svg { position: absolute; top: 11px; left: 11px; width: 16px; height: 16px; color: #829087; pointer-events: none; }
     .search-box input { min-height: 38px; padding-left: 34px; background: #fff; }
@@ -105,6 +108,8 @@
     @media (max-width: 1050px) {
       .purchase-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .purchase-form .button-buy { grid-column: 1 / -1; }
+      .catalog-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .catalog-filters .search-box { grid-column: span 2; }
     }
     @media (max-width: 850px) {
       main { padding: 27px 18px 40px; }
@@ -128,6 +133,9 @@
       .metric-label { font-size: 10px; }
       .section { padding: 16px 14px; }
       .catalog-tools { align-items: stretch; flex-direction: column; gap: 7px; }
+      .catalog-filters { grid-template-columns: 1fr 1fr; }
+      .catalog-filters .search-box { grid-column: 1 / -1; }
+      .catalog-filters .field:first-of-type { grid-column: 1 / -1; }
       .search-box { max-width: none; }
       .result-count { text-align: right; }
       .purchase-form { grid-template-columns: 1fr 1fr; }
@@ -179,11 +187,18 @@
             </form>
             <div id="purchase-status" class="status" role="status" aria-live="polite"></div>
           </div>
-          <div class="catalog-tools">
+          <form id="product-filter-form" class="catalog-filters">
             <label class="search-box" for="product-search">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
-              <input id="product-search" type="search" placeholder="Найти по названию, бренду или модели" autocomplete="off" />
+              <input id="product-search" type="search" placeholder="Название товара" autocomplete="off" />
             </label>
+            <div class="field"><label for="product-category-filter">Категория</label><select id="product-category-filter"><option value="">Все категории</option></select></div>
+            <div class="field"><label for="min-price-filter">Цена от, ₽</label><input id="min-price-filter" type="number" min="0" step="0.01" /></div>
+            <div class="field"><label for="max-price-filter">Цена до, ₽</label><input id="max-price-filter" type="number" min="0" step="0.01" /></div>
+            <button class="button button-primary" type="submit">Найти</button>
+            <button class="button button-secondary" id="product-filter-reset" type="button">Сбросить</button>
+          </form>
+          <div class="catalog-tools">
             <span id="product-result-count" class="result-count"></span>
           </div>
           <div class="table-wrap"><table><thead><tr><th>ID</th><th>Товар</th><th>Категория</th><th>Цена</th><th>Остаток</th></tr></thead><tbody id="products"><tr><td colspan="5" class="empty">Загрузка каталога...</td></tr></tbody></table></div>
@@ -254,21 +269,35 @@
     async function loadCategories() {
         categories = await getJson('/categories');
         $('#category-select').innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        $('#product-category-filter').innerHTML = '<option value="">Все категории</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     }
 
-    function renderProducts() {
-        const query = $('#product-search').value.trim().toLocaleLowerCase('ru-RU');
-        const filtered = products.filter(p => {
-            const category = categories.find(c => c.id === p.category_id)?.name || '';
-            return [p.name, p.brand, p.model, category].some(value => String(value || '').toLocaleLowerCase('ru-RU').includes(query));
-        });
-        $('#products').innerHTML = filtered.length ? filtered.map(p => `<tr><td>${p.id}</td><td><span class="product-name">${p.name}</span><span class="product-sub">${[p.brand, p.model].filter(Boolean).join(' ') || 'Без описания модели'}</span></td><td>${categories.find(c => c.id === p.category_id)?.name || p.category_id}</td><td><strong>${money(p.price)}</strong></td><td><span class="stock ${p.stock_quantity < 4 ? 'stock-low' : ''}">${p.stock_quantity}</span></td></tr>`).join('') : `<tr><td colspan="5" class="empty">${query ? 'По вашему запросу ничего не найдено' : 'Товаров пока нет'}</td></tr>`;
-        $('#product-result-count').textContent = query ? `${filtered.length} из ${products.length}` : `${products.length} товаров`;
+    function renderProducts(filtered, hasFilters) {
+        $('#products').innerHTML = filtered.length ? filtered.map(p => `<tr><td>${p.id}</td><td><span class="product-name">${p.name}</span><span class="product-sub">${[p.brand, p.model].filter(Boolean).join(' ') || 'Без описания модели'}</span></td><td>${categories.find(c => c.id === p.category_id)?.name || p.category_id}</td><td><strong>${money(p.price)}</strong></td><td><span class="stock ${p.stock_quantity < 4 ? 'stock-low' : ''}">${p.stock_quantity}</span></td></tr>`).join('') : `<tr><td colspan="5" class="empty">${hasFilters ? 'По заданным фильтрам ничего не найдено' : 'Товаров пока нет'}</td></tr>`;
+        $('#product-result-count').textContent = `${filtered.length} из ${products.length} товаров`;
+    }
+
+    async function searchProducts() {
+        const params = new URLSearchParams();
+        const name = $('#product-search').value.trim();
+        const categoryId = $('#product-category-filter').value;
+        const minPrice = $('#min-price-filter').value;
+        const maxPrice = $('#max-price-filter').value;
+        if (name) params.set('name', name);
+        if (categoryId) params.set('category_id', categoryId);
+        if (minPrice !== '') params.set('min_price', minPrice);
+        if (maxPrice !== '') params.set('max_price', maxPrice);
+
+        try {
+            const filtered = await getJson(`/products?${params.toString()}`);
+            renderProducts(filtered, params.size > 0);
+        } catch (error) {
+            $('#products').innerHTML = `<tr><td colspan="5" class="empty">${error.message}</td></tr>`;
+        }
     }
 
     async function loadProducts() {
         products = await getJson('/products');
-        renderProducts();
         $('#purchase-product').innerHTML = products.filter(p => p.is_active && p.stock_quantity > 0).map(p => `<option value="${p.id}">${p.name} · ${money(p.price)} · остаток ${p.stock_quantity}</option>`).join('');
         $('#metric-products').textContent = products.length;
     }
@@ -321,6 +350,7 @@
             status.textContent = `Покупка оформлена на ${money(result.amount)}. Деньги переведены продавцу.`;
             status.className = 'status ok';
             await Promise.all([loadProducts(), loadCustomers()]);
+            await searchProducts();
             await loadPurchases();
         } catch (error) { status.textContent = error.message; status.className = 'status error'; }
     });
@@ -342,12 +372,15 @@
             status.className = 'status ok';
             await loadCategories();
             await loadProducts();
+            await searchProducts();
         } catch (error) { status.textContent = error.message; status.className = 'status error'; }
     });
 
     async function refreshAll() {
         try {
-            await Promise.all([loadCategories(), loadProducts(), loadCustomers()]);
+            await loadCategories();
+            await Promise.all([loadProducts(), loadCustomers()]);
+            await searchProducts();
             await loadPurchases();
         } catch (error) {
             $('#products').innerHTML = `<tr><td colspan="5" class="empty">${error.message}. Проверьте подключение к базе.</td></tr>`;
@@ -356,7 +389,8 @@
 
     $('#refresh').addEventListener('click', refreshAll);
     $('#refresh-purchases').addEventListener('click', loadPurchases);
-    $('#product-search').addEventListener('input', renderProducts);
+    $('#product-filter-form').addEventListener('submit', event => { event.preventDefault(); searchProducts(); });
+    $('#product-filter-reset').addEventListener('click', () => { $('#product-filter-form').reset(); searchProducts(); });
     refreshAll();
 </script>
 </html>

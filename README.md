@@ -65,3 +65,5 @@
 - `app/api/v1/` — API-маршруты.
 - `static/` — веб-интерфейс.
 - `create_database.sql` — создание базы данных SQL Server.
+- `sqlalchemy_orm_crud.py` — отдельный пример CRUD с SQLAlchemy ORM.
+- `homework.py` — отдельное учебное задание по машинному обучению.
